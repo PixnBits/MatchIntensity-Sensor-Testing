@@ -41,8 +41,7 @@
             // 
             // serialPort1
             // 
-            this.serialPort1.BaudRate = 57600;
-            this.serialPort1.PortName = "COM5";
+            this.serialPort1.PortName = "COM7";
             // 
             // chart1
             // 

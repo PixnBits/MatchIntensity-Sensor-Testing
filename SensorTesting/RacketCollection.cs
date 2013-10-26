@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DSPUtil;
+using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace SensorTesting
 {
@@ -11,59 +13,61 @@ namespace SensorTesting
     {
         private Dictionary<string, List<RacketData>> rackets = new Dictionary<string, List<RacketData>> { };
 
-        private string deliminator = "|";
-        private string doubleDelim = "||";
+        // would like better to have NMEA0183 style messages rather than only one allowed
+        // currently looking for format `^D2-C8-9F-3D@F9:00,F9:F8,F9:FF&`
+        //private Regex statementParser = new Regex("^([0-9A-F]{2}-[0-9A-F]{2}-[0-9A-F]{2}-[0-9A-F]{2})@([A-F0-9]+):([A-F0-9]+),([A-F0-9]+):([A-F0-9]+),([A-F0-9]+):([A-F0-9]+)", RegexOptions.IgnoreCase);
+        private Regex statementParser = new Regex("\\^([0-9A-F]{2}-[0-9A-F]{2}-[0-9A-F]{2}-[0-9A-F]{2})@([0-9A-F:]+),([0-9A-F:]+),([0-9A-F:]+)\\&", RegexOptions.IgnoreCase);
+
+        private int fakeMillis = 0;
 
         public string parseSensorLine(string dataLine)
         {
             //Console.Write("dataLine: ");
             //Console.WriteLine(dataLine);
 
-            dataLine = dataLine.Replace("\r", String.Empty);
-            while (dataLine.IndexOf(doubleDelim) > -1)
-            {
-                dataLine = dataLine.Replace(doubleDelim, deliminator);
-            }
-            if (dataLine.EndsWith(deliminator))
-            {
-                dataLine = dataLine.Substring(0, dataLine.Length - 1);
-            }
-            //Console.Write("dataLine: ");
-            //Console.WriteLine(dataLine);
 
-            string[] parts = dataLine.Split(deliminator[0]);
-            //Console.Write("parts: ");
-            //Console.WriteLine(parts);
+            Match matchParts = statementParser.Match(dataLine);
 
-            //Console.WriteLine("parts length", parts.Length);
-            if (parts.Length < 1)
+            if (matchParts.Success)
             {
-                return null;
-            }
+                // groups are 1-indexed, captures are 0-indexed
+                string id = matchParts.Groups[1].Captures[0].ToString();
+                
+                int xM = int.Parse(matchParts.Groups[2].Captures[0].ToString().Replace(":",String.Empty), NumberStyles.HexNumber);
+                int yM = int.Parse(matchParts.Groups[3].Captures[0].ToString().Replace(":", String.Empty), NumberStyles.HexNumber);
+                int zM = int.Parse(matchParts.Groups[4].Captures[0].ToString().Replace(":", String.Empty), NumberStyles.HexNumber);
 
-            RacketData currentRacket = new RacketData(parts);
-            
-            if (!this.rackets.ContainsKey(parts[0]))
-            {
-                rackets.Add(currentRacket.id, new List<RacketData> { });
-            }
-            rackets[currentRacket.id].Add(currentRacket);
+                RacketData currentRacket = new RacketData(id, 0, ++fakeMillis, 0, 0, 0, xM, yM, zM);
 
-            //Console.Write("racketId: ");
-            //Console.WriteLine(currentRacket.id);
-            //Console.Write("data points: ");
-            //Console.WriteLine(rackets[currentRacket.id].Count);
+                if (!this.rackets.ContainsKey(id))
+                {
+                    Console.WriteLine("Adding racket " + id + " to the list");
+                    rackets.Add(currentRacket.id, new List<RacketData> { });
+                }
+                rackets[currentRacket.id].Add(currentRacket);
 
-            if (rackets[currentRacket.id].Count > 50)
-            {
-                rackets[currentRacket.id].RemoveAt(0);
+                //Console.Write("racketId: ");
+                //Console.WriteLine(currentRacket.id);
+                //Console.Write("data points: ");
+                //Console.WriteLine(rackets[currentRacket.id].Count);
+
+                if (rackets[currentRacket.id].Count > 50)
+                {
+                    rackets[currentRacket.id].RemoveAt(0);
+                }
+
+                return currentRacket.id;
             }
 
-            return currentRacket.id;
+            return null;
+
         }
 
         public Complex[] getComplexPointsMagnitude(string racketName)
         {
+            if(!this.rackets.ContainsKey(racketName)){
+                return null;
+            }
             List<RacketData> racket = this.rackets[racketName];
             Complex[] points = new Complex[racket.Count];
             int index = 0;
@@ -76,6 +80,10 @@ namespace SensorTesting
         }
 
         public Complex[] getComplexPointsMagnitudeM(string racketName){
+            if (!this.rackets.ContainsKey(racketName))
+            {
+                return null;
+            }
             List<RacketData> racket = this.rackets[racketName];
             Complex[] points = new Complex[racket.Count];
             int index = 0;
@@ -90,6 +98,9 @@ namespace SensorTesting
         public Complex[] getMagnitudeFft(string racketName)
         {
             Complex[] data = this.getComplexPointsMagnitude(racketName);
+            if(null == data){
+                return null;
+            }
             DSPUtil.Fourier.FFT(data.Length, data);
 
             return data;
@@ -97,6 +108,10 @@ namespace SensorTesting
         public Complex[] getMagnitudeFftM(string racketName)
         {
             Complex[] data = this.getComplexPointsMagnitudeM(racketName);
+            if (data == null)
+            {
+                return null;
+            }
             DSPUtil.Fourier.FFT(data.Length, data);
 
             return data;
@@ -105,6 +120,12 @@ namespace SensorTesting
         public double[] getMagnitudeFftMagnitude(string racketName)
         {
             Complex[] freq = this.getMagnitudeFft(racketName);
+
+            if (freq == null)
+            {
+                return null;
+            }
+
             double[] data = new double[freq.Count()];
             for (int i = 0; i < data.Length; i++)
             {
@@ -116,6 +137,10 @@ namespace SensorTesting
         public double[] getMagnitudeFftMagnitudeM(string racketName)
         {
             Complex[] freq = this.getMagnitudeFftM(racketName);
+            if (freq == null)
+            {
+                return null;
+            }
             double[] data = new double[freq.Count()];
             for (int i = 0; i < data.Length; i++)
             {
@@ -132,6 +157,17 @@ namespace SensorTesting
             {
                 this.rackets[racketName].RemoveRange(0, length - maxIndexes);
             }
+        }
+
+        public string[] getRacketNames() {
+            string[] names = new string[this.rackets.Keys.Count];
+            int i = 0;
+            foreach (string racketName in this.rackets.Keys)
+            {
+                names[i++] = racketName;
+            }
+
+            return names;
         }
 
         internal List<RacketData> get(string racketId)

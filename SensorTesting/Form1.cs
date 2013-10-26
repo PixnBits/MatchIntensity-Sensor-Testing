@@ -136,109 +136,112 @@ namespace SensorTesting
                 magFft = chart1.Series["magFft"],
                 magMFft = chart1.Series["magMFft"];
 
-            RacketData data = racketManager.getLastData("01");
+            foreach (string racketName in racketManager.getRacketNames())
+            {
+                RacketData data = racketManager.getLastData(racketName);
 
-            if (null == data)
-            {
-                return;
-            }
+                if (null == data)
+                {
+                    return;
+                }
 
-            if (null != data.x)
-            {
-                x.Points.Add((double)data.x);
-            }
-            if (null != data.y)
-            {
-                y.Points.Add((double)data.y);
-            }
-            if (null != data.z)
-            {
-                z.Points.Add((double)data.z);
-            }
-            if (null != data.x && null != data.y && null != data.z)
-            {
-                mag.Points.Add(Math.Sqrt(data.x * data.x + data.y * data.y + data.z * data.z));
-            }
+                if (null != data.x)
+                {
+                    x.Points.Add((double)data.x);
+                }
+                if (null != data.y)
+                {
+                    y.Points.Add((double)data.y);
+                }
+                if (null != data.z)
+                {
+                    z.Points.Add((double)data.z);
+                }
+                if (null != data.x && null != data.y && null != data.z)
+                {
+                    mag.Points.Add(Math.Sqrt(data.x * data.x + data.y * data.y + data.z * data.z));
+                }
 
-            while (x.Points.Count > maxXPoints)
-            {
-                x.Points.RemoveAt(0);
-            }
+                while (x.Points.Count > maxXPoints)
+                {
+                    x.Points.RemoveAt(0);
+                }
 
-            while (y.Points.Count > maxXPoints)
-            {
-                y.Points.RemoveAt(0);
-            }
+                while (y.Points.Count > maxXPoints)
+                {
+                    y.Points.RemoveAt(0);
+                }
 
-            while (z.Points.Count > maxXPoints)
-            {
-                z.Points.RemoveAt(0);
-            }
+                while (z.Points.Count > maxXPoints)
+                {
+                    z.Points.RemoveAt(0);
+                }
 
-            while (mag.Points.Count > maxXPoints)
-            {
-                mag.Points.RemoveAt(0);
-            }
+                while (mag.Points.Count > maxXPoints)
+                {
+                    mag.Points.RemoveAt(0);
+                }
 
 
-            if (null != data.xM)
-            {
-                xM.Points.Add((double)data.xM);
-            }
-            if (null != data.yM)
-            {
-                yM.Points.Add((double)data.yM);
-            }
-            if (null != data.zM)
-            {
-                zM.Points.Add((double)data.zM);
-            }
-            if (null != data.xM && null != data.yM && null != data.zM)
-            {
-                magM.Points.Add(Math.Sqrt(data.xM * data.xM + data.yM * data.yM + data.zM * data.zM));
-            }
+                if (null != data.xM)
+                {
+                    xM.Points.Add((double)data.xM);
+                }
+                if (null != data.yM)
+                {
+                    yM.Points.Add((double)data.yM);
+                }
+                if (null != data.zM)
+                {
+                    zM.Points.Add((double)data.zM);
+                }
+                if (null != data.xM && null != data.yM && null != data.zM)
+                {
+                    magM.Points.Add(Math.Sqrt(data.xM * data.xM + data.yM * data.yM + data.zM * data.zM));
+                }
 
-            while (xM.Points.Count > maxXPoints)
-            {
-                xM.Points.RemoveAt(0);
-            }
+                while (xM.Points.Count > maxXPoints)
+                {
+                    xM.Points.RemoveAt(0);
+                }
 
-            while (yM.Points.Count > maxXPoints)
-            {
-                yM.Points.RemoveAt(0);
-            }
+                while (yM.Points.Count > maxXPoints)
+                {
+                    yM.Points.RemoveAt(0);
+                }
 
-            while (zM.Points.Count > maxXPoints)
-            {
-                zM.Points.RemoveAt(0);
-            }
+                while (zM.Points.Count > maxXPoints)
+                {
+                    zM.Points.RemoveAt(0);
+                }
 
-            while (magM.Points.Count > maxXPoints)
-            {
-                magM.Points.RemoveAt(0);
-            }
+                while (magM.Points.Count > maxXPoints)
+                {
+                    magM.Points.RemoveAt(0);
+                }
 
-            // remove all points from the series
-            while (magFft.Points.Count() > 0)
-            {
-                magFft.Points.RemoveAt(0);
+                // remove all points from the series
+                while (magFft.Points.Count() > 0)
+                {
+                    magFft.Points.RemoveAt(0);
+                }
+                while (magMFft.Points.Count() > 0)
+                {
+                    magMFft.Points.RemoveAt(0);
+                }
+                // compute the FFT of the racket
+                double[] magFftData = racketManager.getMagnitudeFftMagnitude(racketName);
+                double[] magMFftData = racketManager.getMagnitudeFftMagnitudeM(racketName);
+                for (int i = 0; i < magFftData.Length; i++)
+                {
+                    magFft.Points.Add(magFftData[i]);
+                }
+                for (int i = 0; i < magMFftData.Length; i++)
+                {
+                    magMFft.Points.Add(magMFftData[i] / 40);
+                }
+                racketManager.trimRacketDataToLength(racketName, maxXPoints);
             }
-            while (magMFft.Points.Count() > 0)
-            {
-                magMFft.Points.RemoveAt(0);
-            }
-            // compute the FFT of the racket
-            double[] magFftData = racketManager.getMagnitudeFftMagnitude("01");
-            double[] magMFftData = racketManager.getMagnitudeFftMagnitudeM("01");
-            for (int i = 0; i < magFftData.Length; i++)
-            {
-                magFft.Points.Add(magFftData[i]);
-            }
-            for (int i = 0; i < magMFftData.Length; i++)
-            {
-                magMFft.Points.Add(magMFftData[i] / 40);
-            }
-            racketManager.trimRacketDataToLength("01", maxXPoints);
 
         }
 
