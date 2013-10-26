@@ -1,0 +1,10 @@
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\bin\Debug\SensorTesting.exe.config
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\bin\Debug\SensorTesting.exe
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\bin\Debug\SensorTesting.pdb
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\obj\Debug\SensorTesting.csprojResolveAssemblyReference.cache
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\obj\Debug\SensorTesting.Form1.resources
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\obj\Debug\SensorTesting.Properties.Resources.resources
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\obj\Debug\SensorTesting.csproj.GenerateResource.Cache
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\obj\Debug\SensorTesting.exe
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\obj\Debug\SensorTesting.pdb
+C:\Users\PixnBits\Documents\College\2013 Fall\EEE 489\SensorTesting\SensorTesting\bin\Debug\DSPUtil.dll
