@@ -83,6 +83,9 @@ namespace SensorTesting
             magFft.ChartArea =
             magMFft.ChartArea =
                 chart1.ChartAreas[2].Name;
+
+            // see if the wixel is already connected
+            portFinder_DeviceChanged(sender, null);
         }
 
         void portFinder_DeviceChanged(object sender, fireDeviceChangedEventArgs e)
@@ -99,18 +102,28 @@ namespace SensorTesting
                     }
                     Console.WriteLine("Setting port to {0}", portNames[0]);
                     serialPort1.PortName = portNames[0];
+                    writeComPort_threadsafe(serialPort1.PortName);
                     serialPort1.Open();
                 }
             }
             else
             {
-                if (serialPort1.IsOpen)
+                if (serialPort1.IsOpen && portNames.Contains(serialPort1.PortName))
                 {
                     serialPort1.Close();
                 }
+                writeComPort_threadsafe("Not Connected");
             }
             
             //throw new NotImplementedException();
+        }
+
+        private void writeComPort_threadsafe(string portName)
+        {
+            this.Invoke((MethodInvoker)delegate
+            {
+                lbl_comPort.Text = portName;
+            });
         }
 
         void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
@@ -287,7 +300,7 @@ namespace SensorTesting
 
                 if (magMFftData.Length > 6)
                 {
-                    if (magMFftData[6] > 2)
+                    if (magMFftData[2] > (40*850))
                     {
                         actionsClient.sendAction(MatchIntensityActionsClient.ACTION_SHOT);
                     }
@@ -308,9 +321,14 @@ namespace SensorTesting
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (serialPort1.IsOpen)
+            if (portFinder != null)
             {
-                serialPort1.Close();
+                string[] portNames = portFinder.getSerialPortsInfo();
+
+                if (serialPort1.IsOpen && portNames.Contains(serialPort1.PortName))
+                {
+                    serialPort1.Close();
+                }
             }
 
             if (null != actionsClient)

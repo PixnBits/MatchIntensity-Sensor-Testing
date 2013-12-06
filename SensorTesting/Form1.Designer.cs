@@ -36,6 +36,7 @@
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.lbl_comPort = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -66,11 +67,21 @@
             this.chart1.TabIndex = 2;
             this.chart1.Text = "chart1";
             // 
+            // lbl_comPort
+            // 
+            this.lbl_comPort.AutoSize = true;
+            this.lbl_comPort.Location = new System.Drawing.Point(891, 12);
+            this.lbl_comPort.Name = "lbl_comPort";
+            this.lbl_comPort.Size = new System.Drawing.Size(79, 13);
+            this.lbl_comPort.TabIndex = 3;
+            this.lbl_comPort.Text = "Not Connected";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(982, 702);
+            this.Controls.Add(this.lbl_comPort);
             this.Controls.Add(this.chart1);
             this.Name = "Form1";
             this.Text = "Form1";
@@ -78,6 +89,7 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -85,6 +97,7 @@
 
         private System.IO.Ports.SerialPort serialPort1;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.Label lbl_comPort;
     }
 }
 
