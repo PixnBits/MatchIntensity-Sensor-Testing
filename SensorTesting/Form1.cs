@@ -16,6 +16,8 @@ namespace SensorTesting
 
         private string serialReadBuffer = String.Empty;
         private RacketCollection racketManager;
+        private MatchIntensityActionsClient actionsClient = null;
+        private SerialPortFinder portFinder;
 
         public Form1()
         {
@@ -27,8 +29,14 @@ namespace SensorTesting
 
             racketManager = new RacketCollection();
 
+            portFinder = new SerialPortFinder();
+
+            portFinder.DeviceChanged += portFinder_DeviceChanged;
+
             serialPort1.DataReceived += serialPort1_DataReceived;
-            serialPort1.Open();
+
+            actionsClient = new MatchIntensityActionsClient();
+            actionsClient.connect(true);
 
             chart1.Series.RemoveAt(0);
 
@@ -75,6 +83,34 @@ namespace SensorTesting
             magFft.ChartArea =
             magMFft.ChartArea =
                 chart1.ChartAreas[2].Name;
+        }
+
+        void portFinder_DeviceChanged(object sender, fireDeviceChangedEventArgs e)
+        {
+            string[] portNames = portFinder.getSerialPortsInfo();
+
+            if (portNames.Length > 0)
+            {
+                if (serialPort1.PortName != portNames[0])
+                {
+                    if (serialPort1.IsOpen)
+                    {
+                        serialPort1.Close();
+                    }
+                    Console.WriteLine("Setting port to {0}", portNames[0]);
+                    serialPort1.PortName = portNames[0];
+                    serialPort1.Open();
+                }
+            }
+            else
+            {
+                if (serialPort1.IsOpen)
+                {
+                    serialPort1.Close();
+                }
+            }
+            
+            //throw new NotImplementedException();
         }
 
         void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
@@ -136,8 +172,15 @@ namespace SensorTesting
                 magFft = chart1.Series["magFft"],
                 magMFft = chart1.Series["magMFft"];
 
+            //*
+            string[] racketNames = racketManager.getRacketNames();
+            if(racketNames.Length > 0)
+            {
+                string racketName = racketNames[0];
+            /*/
             foreach (string racketName in racketManager.getRacketNames())
             {
+            //*/
                 RacketData data = racketManager.getLastData(racketName);
 
                 if (null == data)
@@ -241,6 +284,15 @@ namespace SensorTesting
                     magMFft.Points.Add(magMFftData[i] / 40);
                 }
                 racketManager.trimRacketDataToLength(racketName, maxXPoints);
+
+                if (magMFftData.Length > 6)
+                {
+                    if (magMFftData[6] > 2)
+                    {
+                        actionsClient.sendAction(MatchIntensityActionsClient.ACTION_SHOT);
+                    }
+                }
+
             }
 
         }
@@ -250,6 +302,7 @@ namespace SensorTesting
             this.Invoke((MethodInvoker)delegate
             {
                 this.addPoint();
+                //actionsClient.sendAction(MatchIntensityActionsClient.ACTION_SHOT);
             });
         }
 
@@ -258,6 +311,21 @@ namespace SensorTesting
             if (serialPort1.IsOpen)
             {
                 serialPort1.Close();
+            }
+
+            if (null != actionsClient)
+            {
+                actionsClient.close();
+            }
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+
+            if (null != portFinder)
+            {
+                portFinder.WndProc(m);
             }
         }
     }

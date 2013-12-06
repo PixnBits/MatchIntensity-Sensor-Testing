@@ -30,14 +30,16 @@ namespace SensorTesting
 
             if (matchParts.Success)
             {
+                Console.WriteLine("dataLine " + dataLine);
                 // groups are 1-indexed, captures are 0-indexed
                 string id = matchParts.Groups[1].Captures[0].ToString();
                 
-                int xM = int.Parse(matchParts.Groups[2].Captures[0].ToString().Replace(":",String.Empty), NumberStyles.HexNumber);
-                int yM = int.Parse(matchParts.Groups[3].Captures[0].ToString().Replace(":", String.Empty), NumberStyles.HexNumber);
-                int zM = int.Parse(matchParts.Groups[4].Captures[0].ToString().Replace(":", String.Empty), NumberStyles.HexNumber);
-
+                int xM = int.Parse(matchParts.Groups[2].Captures[0].ToString().Replace(":", String.Empty), NumberStyles.HexNumber) & 0x0FFF; // 12 bits
+                int yM = int.Parse(matchParts.Groups[3].Captures[0].ToString().Replace(":", String.Empty), NumberStyles.HexNumber) & 0x0FFF;
+                int zM = int.Parse(matchParts.Groups[4].Captures[0].ToString().Replace(":", String.Empty), NumberStyles.HexNumber) & 0x0FFF;
+                
                 RacketData currentRacket = new RacketData(id, 0, ++fakeMillis, 0, 0, 0, xM, yM, zM);
+                //RacketData currentRacket = new RacketData(id, 0, ++fakeMillis, xM, yM, zM, xM, yM, zM);
 
                 if (!this.rackets.ContainsKey(id))
                 {
