@@ -18,6 +18,7 @@ namespace SensorTesting
         private RacketCollection racketManager;
         private MatchIntensityActionsClient actionsClient = null;
         private SerialPortFinder portFinder;
+        private long lastShot_milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
         public Form1()
         {
@@ -302,7 +303,12 @@ namespace SensorTesting
                 {
                     if (magMFftData[2] > (40*850))
                     {
-                        actionsClient.sendAction(MatchIntensityActionsClient.ACTION_SHOT);
+                        long now_milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                        if (now_milliseconds - lastShot_milliseconds > 500)
+                        {
+                            actionsClient.sendAction(MatchIntensityActionsClient.ACTION_SHOT);
+                            lastShot_milliseconds = now_milliseconds;
+                        }
                     }
                 }
 
